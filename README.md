@@ -173,7 +173,7 @@ When a parameter is stored in BFloat16, promotes it to higher precision for the 
 Rose(params, lr=1e-3, bf16_sr=True)   # default
 Rose(params, lr=1e-3, bf16_sr=False)  # plain truncation
 
-sr_gen = torch.Generator(device="cuda").manual_seed(42)
+sr_gen = torch.Generator(device="cuda").manual_seed(0xd1ce)
 Rose(params, lr=1e-3, bf16_sr=sr_gen)
 ```
 
@@ -211,7 +211,7 @@ To my wife, for her extraordinary patience through the countless days and nights
 
 To my son, a source of joy, perspective, and inspiration, whose curiosity and bright spirit remind me why building for the future matters.
 
-As an independent researcher, I am grateful for the love and support of all of my family. This work would not have been possible without them.
+As an independent researcher, I am grateful for the love and support of all of my family and friends. This work would not have been possible without them.
 
 ## 😊 A Kind Request
 

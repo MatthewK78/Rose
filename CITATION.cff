@@ -1,0 +1,27 @@
+cff-version: 1.2.0
+title: 'Rose: Range-Of-Slice Equilibration optimizer'
+type: software
+authors:
+  - given-names: Matthew
+    family-names: Kieren
+    email: mkieren@gmail.com
+    orcid: 'https://orcid.org/0009-0001-8068-5171'
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.19589765
+    description: Stateless optimization through range-normalized gradient updates.
+repository-code: 'https://github.com/MatthewK78/Rose'
+abstract: 'The Rose optimizer rescales gradients using a per-slice `max - min` range computed by reducing all dimensions beyond the leading axis. Unlike Adam and other stateful optimizers, Rose maintains no per-parameter state between steps: no momentum buffers, variance estimates, or step counters.'
+keywords:
+  - optimizer
+  - pytorch
+  - transformers
+  - deep-learning
+  - machine-learning
+  - artificial-intelligence
+  - gradient-descent
+  - fine-tuning
+  - pretraining
+  - diffusion-models
+  - large-language-models
+license: Apache-2.0

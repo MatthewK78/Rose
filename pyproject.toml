@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rose-opt"
+version = "1.0.0"
+description = "Rose: Range-Of-Slice Equilibration optimizer"
+readme = "README.md"
+authors = [{name="Matthew E. Kieren", email="mkieren@gmail.com"}]
+license = "Apache-2.0"
+requires-python = ">=3.10"
+classifiers = [
+	"Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+	"Topic :: Scientific/Engineering :: Mathematics",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Intended Audience :: Developers",
+	"Intended Audience :: Science/Research",
+	"Intended Audience :: Education",
+    "Operating System :: OS Independent"
+]
+keywords = ["pytorch", "optimizer", "deep-learning", "machine-learning", "gradient-descent", "adamw", "sgd", "fine-tuning", "pretraining", "ai", "artificial-intelligence", "lora", "diffusion", "llm", "transformers"]
+
+[project.optional-dependencies]
+torch = ["torch>=2.0.0"]
+
+[project.urls]
+Homepage = "https://github.com/MatthewK78/Rose"
+Repository = "https://github.com/MatthewK78/Rose"
+Issues = "https://github.com/MatthewK78/Rose/issues"
+
+[tool.setuptools]
+license-files = ["LICENSE"]

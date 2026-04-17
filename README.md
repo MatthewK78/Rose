@@ -22,7 +22,7 @@ Stateless optimization through range-normalized gradient updates.
 
 ## 📰 News
 
-> 2026-04-17 — Initial public release
+> 2026-04-17 [v1.0.0] — Initial public release
 
 ## 🌹 Introduction
 

@@ -228,8 +228,8 @@ Your support and acknowledgment are sincerely appreciated! 😊
   title        = {Rose: Range-Of-Slice Equilibration optimizer},
   year         = {2026},
   publisher    = {Zenodo},
-  doi          = {10.5281/zenodo.19589765},
-  url          = {https://doi.org/10.5281/zenodo.19589765}
+  doi          = {10.5281/zenodo.19589764},
+  url          = {https://doi.org/10.5281/zenodo.19589764}
 }
 ```
 

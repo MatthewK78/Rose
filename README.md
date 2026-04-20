@@ -22,17 +22,16 @@ Stateless optimization through range-normalized gradient updates.
 
 ## 📰 News
 
+> 2026-04-19 [v1.0.1] — Misc refinements to algorithm and docs
 > 2026-04-17 [v1.0.0] — Initial public release
 
 ## 🌹 Introduction
 
-Most adaptive optimizers (such as Adam, RMSprop, Adafactor, and their many variants) accumulate running statistics for every parameter: first-moment estimates, second-moment estimates, step counters, and sometimes more. These buffers can double or triple the memory footprint of a model's parameters and introduce temporal entanglements (bias correction, momentum decay, sensitivity to $\beta$ schedules) that make training dynamics harder to reason about.
+Most adaptive optimizers (such as Adam, RMSprop, and their many variants) accumulate running statistics for every parameter: first-moment estimates, second-moment estimates, and sometimes more. These buffers can double or triple the memory footprint of a model's parameters and introduce temporal entanglements (bias correction, momentum decay, sensitivity to $\beta$ schedules) that make training dynamics harder to reason about.
 
 **Rose** asks a simple question: *how much can you accomplish with just the gradient you have right now?*
 
-At each step, Rose normalizes every gradient tensor by a **per-slice range** (the difference between the maximum and minimum values computed across all dimensions beyond the leading axis) yielding one adaptive scale factor per output unit. An optional **coefficient-of-variation trust gate** blends per-slice ranges with their global mean when the ranges are noisy, and optional **gradient centralization** removes shared directional bias before scaling.
-
-In my own preliminary experiments, it has shown extremely promising convergence and generalization.
+At each step, Rose normalizes every gradient tensor by a **per-slice range** yielding one adaptive scale factor per output unit. An optional **coefficient-of-variation trust gate** blends per-slice ranges with their global mean when the ranges are noisy, and optional **gradient centralization** removes shared directional bias before scaling.
 
 ## 📦 Installation
 
@@ -52,7 +51,7 @@ optimizer = Rose(params, lr=1e-3)
 
 | Feature | Detail |
 |:--- |:--- |
-| **Zero optimizer state** | No momentum, variance estimates, or step counters. Memory cost is parameters + gradients + processing, nothing else. |
+| **Zero optimizer state** | No momentum, variance estimates, or even step counters. Memory cost is parameters + gradients + processing, nothing else. |
 | **Gradient centralization** | Removes the per-slice mean from gradients of rank ≥ 2, reducing internal covariate shift in the gradient signal and often improving stability and generalization. |
 | **CV trust gating** | Automatically detects when per-slice ranges are noisy and gracefully falls back to a robust global estimate. No manual tuning required. |
 | **Decoupled weight decay** | Standard or schedule-coupled weight decay, preventing late-training decay from overpowering vanishing learning rates. |
@@ -61,19 +60,19 @@ optimizer = Rose(params, lr=1e-3)
 
 ## 🔬 Method
 
-Consider a linear layer with weight matrix $W \in \mathbb{R}^{m \times n}$. Its gradient $G$ has the same shape: $m$ rows, one per output neuron. Rose computes the range (max $-$ min) across the $n$ input-facing elements of each row independently, producing $m$ per-neuron scale factors. For rank-1 parameters such as biases, the range is computed over the full tensor and damped by adding 1, which provides a smooth interpolation between SGD-like behavior (for small ranges) and range-normalized behavior (for large ranges). Truly scalar parameters receive a softsign-like update instead.
+Consider a linear layer with weight matrix $W \in \mathbb{R}^{m \times n}$. Its gradient $G$ has the same shape: $m$ rows, one per output neuron. Rose computes the range ($|\max| - \min$) across the $n$ input-facing elements of each row independently, producing $m$ per-neuron scale factors. Zero-dimensional parameters parameters receive a plain signSGD update.
 
 This is analogous to how Adam assigns each *scalar* parameter its own adaptive denominator via a running variance estimate. Rose instead assigns each *output slice* a denominator based on the instantaneous spread of its gradient, requiring no history at all.
 
 The **trust gate** addresses a practical concern: when per-slice ranges vary wildly (high coefficient of variation), the individual ranges may become unreliable. The trust factor $\tau = \mu / (\mu + \sigma)$ is close to 1 when ranges are self-consistent and close to 0 when they are noisy. The denominator smoothly interpolates between the local range (full detail) and the global mean range (maximum noise resistance).
 
-**Why range instead of variance?** Range is cheaper to compute, requires no centering, and maps cleanly to the idea of *scale equilibration*: it answers "how wide is this gradient slice?" rather than "how energetic is it?" In practice, for the shapes common in deep learning, the two carry similar information, but range has the advantage of depending only on two order statistics and producing a scale factor that directly normalizes the gradient's dynamic range.
+**Why range instead of variance?** Range is cheaper to compute and maps cleanly to the idea of *scale equilibration*: it answers "how wide is this gradient slice?" rather than "how energetic is it?" In practice, for the shapes common in deep learning, the two carry similar information, but range has the advantage of depending only on two order statistics and producing a scale factor that directly normalizes the gradient's dynamic range.
 
 ## 🎛️ Hyperparameters
 
 ### `lr`: Learning Rate
 
-The global step size. **Start with values you would try for Adam** (e.g., `1e-3`). Because the denominator is range-based rather than RMS-based, effective update magnitudes differ; some tuning is expected, but the neighborhood is similar.
+The global step size. Because this optimizer uses range-based normalization rather than Adam's RMS-based normalization, the same `lr` value can correspond to very different effective update sizes. Tune `lr` independently rather than relying on Adam defaults.
 
 ```python
 Rose(params, lr=1e-3)
@@ -111,7 +110,7 @@ $1 - \frac{\eta_t}{\eta_{\text{ref}}} \cdot \lambda$
 |:--- |:--- |
 | `False` | Standard decoupled weight decay.                                                                   |
 | `True` | $\eta_{\text{ref}}$ is resolved from `max_lr` → `initial_lr` → constructor `lr`. |
-| `float` | The provided value is used directly as $\eta_{\text{ref}}$.                                        |
+| `float` | The provided value is used directly as $\eta_{\text{ref}}$. |
 
 ```python
 Rose(params, lr=1e-3, weight_decay=1e-4, wd_schedule=True)  # auto reference
@@ -143,7 +142,7 @@ Rose(params, lr=1e-3, centralize=False)  # disabled
 |:--- |:--- |
 | **Default** | `True` |
 
-Computes a trust factor from the coefficient of variation of the per-slice range tensor and interpolates between the local per-slice range and the global mean range.
+Computes a trust factor from the coefficient of variation of the per-slice range tensor and interpolates between the local per-slice range and the global mean range. This can smooth noisy gradients.
 
 - **Trust ≈ 1** (consistent ranges) → local detail preserved.
 - **Trust ≈ 0** (noisy ranges) → smooth global fallback.
@@ -242,11 +241,15 @@ Your support and acknowledgment are sincerely appreciated! 😊
 
 <sup>3</sup> Hazan, E., Levy, K. Y., & Shalev-Shwartz, S. (2015), *Beyond Convexity: Stochastic Quasi-Convex Optimization*. arXiv:[1507.02030](https://arxiv.org/abs/1507.02030)
 
-<sup>4</sup> You, Y., Gitman, I., & Ginsburg, B. (2017), *Large Batch Training of Convolutional Networks* arXiv:[1708.03888](https://arxiv.org/abs/1708.03888)
+<sup>4</sup> You, Y., Gitman, I., & Ginsburg, B. (2017), *Large Batch Training of Convolutional Networks*. arXiv:[1708.03888](https://arxiv.org/abs/1708.03888)
 
-<sup>5</sup> Yong, H., Huang, J., Hua, X. & Zhang, L. (2020). *Gradient Centralization: A New Optimization Technique for Deep Neural Networks.* arXiv:[2004.01461](https://arxiv.org/abs/2004.01461)
+<sup>5</sup> Yu, A. W., Huang, L., Lin, Q., Salakhutdinov, R., & Carbonell, J. (2017), *Block-Normalized Gradient Method: An Empirical Study for Training Deep Neural Network*. arXiv:[1707.04822](https://arxiv.org/abs/1707.04822)
 
-<sup>6</sup> Zamirai, P., Zhang, J., Aberger, C. R. & De Sa, C. (2020). *Revisiting BFloat16 Training.* arXiv:[2010.06192](https://arxiv.org/abs/2010.06192)
+<sup>6</sup> Bernstein, J., Wang, Y. X., Azizzadenesheli, K., & Anandkumar, A. (2018), *signSGD: Compressed Optimisation for Non-Convex Problems*. arXiv:[1802.04434](https://arxiv.org/abs/1802.04434)
+
+<sup>7</sup> Yong, H., Huang, J., Hua, X. & Zhang, L. (2020). *Gradient Centralization: A New Optimization Technique for Deep Neural Networks.* arXiv:[2004.01461](https://arxiv.org/abs/2004.01461)
+
+<sup>8</sup> Zamirai, P., Zhang, J., Aberger, C. R. & De Sa, C. (2020). *Revisiting BFloat16 Training.* arXiv:[2010.06192](https://arxiv.org/abs/2010.06192)
 
 ## ⚖️ License
 

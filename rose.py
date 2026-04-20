@@ -22,7 +22,7 @@ class Rose(torch.optim.Optimizer):
     Copyright 2026 Matthew Everet Kieren. All Rights Reserved.
     Licensed under the Apache License, Version 2.0.
     
-    Rose rescales gradients using a per-slice `max - min` range
+    Rose rescales gradients using a per-slice `|max| - min` range
     computed by reducing all dimensions beyond the leading axis.
     Unlike Adam and other stateful optimizers, Rose maintains no
     per-parameter state between steps: no momentum buffers,
@@ -35,10 +35,11 @@ class Rose(torch.optim.Optimizer):
         lr (float):
             --- Learning Rate ---
             
-            Start with values you would typically try for Adam (e.g.,
-            `1e-3`). However, because the denominator is range-based
-            rather than RMS-based, effective step magnitudes differ from
-            those of Adam.
+            The global step size. Because this optimizer uses range-based
+            normalization rather than Adam's RMS-based normalization, the
+            same `lr` value can correspond to very different effective
+            update sizes. Tune `lr` independently rather than relying on
+            Adam defaults.
         
         weight_decay (float or None, optional) [1e-4]:
             --- Decoupled Weight Decay ---
@@ -75,7 +76,8 @@ class Rose(torch.optim.Optimizer):
             
             Computes a trust factor from the coefficient of variation of
             the per-slice range tensor, and then interpolates between the
-            local range and a smoother global mean denominator.
+            local range and a smoother global mean denominator.  This can
+            smooth noisy gradients.
         
         bf16_sr (bool or torch.Generator, optional) [True]:
             --- Stochastic Rounding for BFloat16 ---
@@ -124,6 +126,13 @@ class Rose(torch.optim.Optimizer):
           arXiv:1507.02030
         - You, Y., Gitman, I., & Ginsburg, B. (2017), Large Batch
           Training of Convolutional Networks. arXiv:1708.03888
+        - Yu, A. W., Huang, L., Lin, Q., Salakhutdinov, R., &
+          Carbonell, J. (2017), Block-Normalized Gradient Method: An
+          Empirical Study for Training Deep Neural Network.
+          arXiv:1707.04822
+        - Bernstein, J., Wang, Y. X., Azizzadenesheli, K., &
+          Anandkumar, A. (2018), signSGD: Compressed Optimisation for
+          Non-Convex Problems. arXiv:1802.04434
         - Yong, H., Huang, J., Hua, X. & Zhang, L. (2020), Gradient
           Centralization: A New Optimization Technique for Deep Neural
           Networks. arXiv:2004.01461
@@ -234,39 +243,36 @@ class Rose(torch.optim.Optimizer):
                 if wd_factor is not None:
                     param.mul_(wd_factor)
                 
-                # --- Active Axes: all axes except the first ---
-                # Preserve the leading axis so that each slice receives its own scale.
-                active_axes = tuple(range(1, grad.ndim))
-                slice_numel = 1 if grad.ndim == 0 else grad[0].numel()
+                if grad.ndim == 0:
+                    # --- 0D Scalar ---
+                    # Plain SignSGD update for single-value parameters.
+                    param.add_(grad.sign(), alpha=-lr)
                 
-                if grad.numel() == 1:
-                    # --- Scalar ---
-                    # Floor chosen so that grad/(|grad|+floor) remains numerically
-                    # meaningful near zero while still reducing to softsign-like
-                    # behavior for larger gradients.
-                    floor = torch.finfo(grad.dtype).resolution ** (1 / 3)
-                    param.addcdiv_(grad, grad.abs().add_(floor), value=-lr)
-                
-                elif slice_numel == 1:
+                elif grad.ndim == 1:
                     # --- Vectors / Degenerate Slices ---
-                    # +1 damps small ranges
                     g_min, g_max = grad.aminmax()
-                    denom = g_max.sub_(g_min).add_(1.0)
+                    denom = g_max.abs_().sub_(g_min)
+                    denom.masked_fill_(denom == 0.0, 1.0)
                     param.addcdiv_(grad, denom, value=-lr)
                 
                 else:
+                    # --- Active Axes: all axes except the first ---
+                    # Preserve the leading axis so that each
+                    # slice receives its own scale.
+                    active_axes = tuple(range(1, grad.ndim))
+                    
                     # --- Gradient Centralization ---
                     if use_centralize:
-                        if grad.data_ptr() != p.grad.data_ptr():
+                        if grad is not p.grad:
                             grad.sub_(grad.mean(dim=active_axes, keepdim=True))
                         else:
                             grad = grad.sub(grad.mean(dim=active_axes, keepdim=True))
                     
-                    # --- Per-slice Range: R = max(g) - min(g) over `active_axes` ---
-                    # Reducing all non-leading dimensions at once yields one range
-                    # value per leading-axis slice.
+                    # --- Per-slice Range: `R = |max(g)| - min(g)` ---
+                    # Reducing all non-leading dimensions at once
+                    # yields one range value per leading-axis slice.
                     raw_scale = (
-                        grad.amax(dim=active_axes, keepdim=True)
+                        grad.amax(dim=active_axes, keepdim=True).abs_()
                         .sub_(grad.amin(dim=active_axes, keepdim=True))
                     )
                     

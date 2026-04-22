@@ -22,7 +22,7 @@ Stateless optimization through range-normalized gradient updates.
 
 ## 📰 News
 
-> 2026-04-19 [v1.0.1] — Misc refinements to algorithm and docs
+> 2026-04-19 [v1.0.1] — Misc refinements to algorithm and docs<br>
 > 2026-04-17 [v1.0.0] — Initial public release
 
 ## 🌹 Introduction
@@ -53,7 +53,7 @@ optimizer = Rose(params, lr=1e-3)
 |:--- |:--- |
 | **Zero optimizer state** | No momentum, variance estimates, or even step counters. Memory cost is parameters + gradients + processing, nothing else. |
 | **Gradient centralization** | Removes the per-slice mean from gradients of rank ≥ 2, reducing internal covariate shift in the gradient signal and often improving stability and generalization. |
-| **CV trust gating** | Automatically detects when per-slice ranges are noisy and gracefully falls back to a robust global estimate. No manual tuning required. |
+| **CV trust gating** | Automatically detects when per-slice ranges are noisy and gracefully falls back to a robust global estimate. |
 | **Decoupled weight decay** | Standard or schedule-coupled weight decay, preventing late-training decay from overpowering vanishing learning rates. |
 | **BF16 stochastic rounding** | Unbiased rounding for BFloat16 parameters eliminates systematic truncation drift, meaningfully improving low-precision training fidelity. |
 | **Configurable compute precision** | Promotes intermediates to FP64 by default (FP32, BF16, FP16, or native dtype also supported) so that range and division arithmetic stays precise. |
@@ -142,7 +142,7 @@ Rose(params, lr=1e-3, centralize=False)  # disabled
 |:--- |:--- |
 | **Default** | `True` |
 
-Computes a trust factor from the coefficient of variation of the per-slice range tensor and interpolates between the local per-slice range and the global mean range. This can smooth noisy gradients.
+Computes a trust factor from the coefficient of variation of the per-slice range tensor and interpolates between the local per-slice range and the global mean range. This can smooth noisy gradients. Some models prefer it enabled, others disabled; try both.
 
 - **Trust ≈ 1** (consistent ranges) → local detail preserved.
 - **Trust ≈ 0** (noisy ranges) → smooth global fallback.
@@ -258,3 +258,9 @@ Copyright <sup>©</sup> 2026 Matthew Everet Kieren
 Licensed under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0). You may use, modify, and distribute this software in accordance with the license. See [`LICENSE`](LICENSE) for the full text.
 
 ---
+
+<div align="center">
+
+https://github.com/MatthewK78/Rose
+
+</div>

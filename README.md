@@ -51,7 +51,7 @@ optimizer = Rose(params, lr=1e-3)
 
 | Feature | Detail |
 |:--- |:--- |
-| **Zero optimizer state** | No momentum, variance estimates, or even step counters. Memory cost is parameters + gradients + processing, nothing else. |
+| **Zero optimizer state** | No momentum, variance estimates, or even step counters. Memory cost is parameters + gradients + working memory, nothing else. |
 | **Gradient centralization** | Removes the per-slice mean from gradients of rank ≥ 2, reducing internal covariate shift in the gradient signal and often improving stability and generalization. |
 | **CV trust gating** | Automatically detects when per-slice ranges are noisy and gracefully falls back to a robust global estimate. |
 | **Decoupled weight decay** | Standard or schedule-coupled weight decay, preventing late-training decay from overpowering vanishing learning rates. |
@@ -60,7 +60,7 @@ optimizer = Rose(params, lr=1e-3)
 
 ## 🔬 Method
 
-Consider a linear layer with weight matrix $W \in \mathbb{R}^{m \times n}$. Its gradient $G$ has the same shape: $m$ rows, one per output neuron. Rose computes the range ($|\max| - \min$) across the $n$ input-facing elements of each row independently, producing $m$ per-neuron scale factors. Zero-dimensional parameters parameters receive a plain signSGD update.
+Consider a linear layer with weight matrix $W \in \mathbb{R}^{m \times n}$. Its gradient $G$ has the same shape: $m$ rows, one per output neuron. Rose computes the range ($|\max| - \min$) across the $n$ input-facing elements of each row independently, producing $m$ per-neuron scale factors. Zero-dimensional parameters receive a plain signSGD update.
 
 This is analogous to how Adam assigns each *scalar* parameter its own adaptive denominator via a running variance estimate. Rose instead assigns each *output slice* a denominator based on the instantaneous spread of its gradient, requiring no history at all.
 
@@ -142,7 +142,7 @@ Rose(params, lr=1e-3, centralize=False)  # disabled
 |:--- |:--- |
 | **Default** | `True` |
 
-Computes a trust factor from the coefficient of variation of the per-slice range tensor and interpolates between the local per-slice range and the global mean range. This can smooth noisy gradients. Some models prefer it enabled, others disabled; try both.
+Computes a trust factor from the coefficient of variation of the per-slice range tensor and interpolates between the local per-slice range and the global mean range. This can smooth noisy range estimates. Some models perform better with it enabled, others disabled; try both.
 
 - **Trust ≈ 1** (consistent ranges) → local detail preserved.
 - **Trust ≈ 0** (noisy ranges) → smooth global fallback.

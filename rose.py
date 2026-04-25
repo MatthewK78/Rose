@@ -26,7 +26,8 @@ class Rose(torch.optim.Optimizer):
     computed by reducing all dimensions beyond the leading axis.
     Unlike Adam and other stateful optimizers, Rose maintains no
     per-parameter state between steps: no momentum buffers,
-    variance estimates, or step counters.
+    variance estimates, or even step counters. Memory cost is
+    parameters + gradients + working memory, nothing else.
     
     Args:
         params (iterable):
@@ -76,8 +77,9 @@ class Rose(torch.optim.Optimizer):
             
             Computes a trust factor from the coefficient of variation of
             the per-slice range tensor, and then interpolates between the
-            local range and a smoother global mean denominator.  This can
-            smooth noisy gradients.
+            local range and a smoother global mean denominator. This can
+            smooth noisy range estimates. Some models perform better with
+            it enabled, others disabled; try both.
         
         bf16_sr (bool or torch.Generator, optional) [True]:
             --- Stochastic Rounding for BFloat16 ---
@@ -234,8 +236,8 @@ class Rose(torch.optim.Optimizer):
                     raise RuntimeError("Rose does not support sparse gradients")
                 
                 # --- Precision Handling ---
-                use_bf16_sr = bf16_sr and p.dtype is torch.bfloat16
-                fp32 = use_bf16_sr and not compute_dtype
+                use_bf16_sr = bf16_sr and p.dtype == torch.bfloat16
+                fp32 = use_bf16_sr and compute_dtype is None
                 grad = p.grad.to(dtype=torch.float32 if fp32 else compute_dtype)
                 param = p.to(dtype=torch.float32 if fp32 else compute_dtype)
                 

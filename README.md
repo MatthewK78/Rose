@@ -3,17 +3,13 @@
 ![Rose](rose.png)
 
 _**R**ange-**O**f-**S**lice **E**quilibration_
-<br>
-PyTorch Optimizer
+<br>PyTorch Optimizer
 
 Stateless optimization through range-normalized gradient updates.
 
 *In loving memory of my mother, **Rose Kieren**.*
 
-<br>
-
-[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-3776ab?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/) [![License](https://img.shields.io/badge/license-Apache%202.0-228b22?style=for-the-badge)](LICENSE)
-<br>
+[![PyPI](https://img.shields.io/pypi/v/rose-opt?style=for-the-badge&logo=pypi&logoColor=white)](https://pypi.org/project/rose-opt/) [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-3776ab?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/) [![License](https://img.shields.io/badge/license-Apache%202.0-228b22?style=for-the-badge)](LICENSE)<br>
 [![Github Sponsors](https://img.shields.io/badge/GitHub%20Sponsors-30363D?&logo=GitHub-Sponsors&logoColor=EA4AAA)](https://github.com/sponsors/MatthewK78) [![PayPal](https://img.shields.io/badge/PayPal-003087?logo=paypal&logoColor=fff)](https://www.paypal.com/donate/?hosted_button_id=VHLPWXMWHJ4C8)
 
 </div>
@@ -22,6 +18,7 @@ Stateless optimization through range-normalized gradient updates.
 
 ## 📰 News
 
+> 2026-04-26 [v1.0.2] — PyPI support, change to `from rose_opt import Rose`<br>
 > 2026-04-19 [v1.0.1] — Misc refinements to algorithm and docs<br>
 > 2026-04-17 [v1.0.0] — Initial public release
 
@@ -36,12 +33,16 @@ At each step, Rose normalizes every gradient tensor by a **per-slice range** yie
 ## 📦 Installation
 
 ```bash
+pip install rose-opt
+```
+or
+```bash
 pip install git+https://github.com/MatthewK78/Rose
 ```
 
 Usage:
 ```python
-from rose import Rose
+from rose_opt import Rose
 
 optimizer = Rose(params, lr=1e-3)
 ```

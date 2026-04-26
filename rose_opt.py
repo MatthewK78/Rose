@@ -247,7 +247,7 @@ class Rose(torch.optim.Optimizer):
                 
                 if grad.ndim == 0:
                     # --- 0D Scalar ---
-                    # Plain SignSGD update for single-value parameters.
+                    # Plain signSGD update for single-value parameters.
                     param.add_(grad.sign(), alpha=-lr)
                 
                 elif grad.ndim == 1:

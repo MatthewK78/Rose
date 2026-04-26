@@ -1,14 +1,15 @@
 [build-system]
-requires = ["setuptools", "wheel"]
+requires = ["setuptools>=77", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "rose-opt"
-version = "1.0.1"
+version = "1.0.2"
 description = "Rose: Range-Of-Slice Equilibration optimizer"
 readme = "README.md"
 authors = [{name="Matthew E. Kieren", email="mkieren@gmail.com"}]
-license = { text = "Apache-2.0" }
+license = "Apache-2.0"
+license-files = ["LICENSE"]
 requires-python = ">=3.10"
 classifiers = [
 	"Topic :: Scientific/Engineering",
@@ -36,4 +37,4 @@ Repository = "https://github.com/MatthewK78/Rose"
 Issues = "https://github.com/MatthewK78/Rose/issues"
 
 [tool.setuptools]
-license-files = ["LICENSE"]
+py-modules = ["rose_opt"]

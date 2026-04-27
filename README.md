@@ -54,12 +54,15 @@ optimizer = Rose(params, lr=1e-3)
 
 | Feature | Detail |
 |:--- |:--- |
-| **Zero optimizer state** | No momentum, variance estimates, or even step counters. Memory cost is parameters + gradients + working memory, nothing else. |
+| **Stateless** | No momentum, variance estimates, or even step counters. Memory footprint: parameters + gradients + working memory, nothing more. Rose uses less memory than even 8-bit versions of other optimizers, while still retaining full accuracy. |
+| **Improved generalization** | Training loss runs higher while validation loss runs lower, consistent with implicit regularization rather than memorization. |
+| **Accurate and fast** | Matches or exceeds AdamW in observed accuracy and convergence across tested workloads. |
 | **Gradient centralization** | Removes the per-slice mean from gradients of rank ≥ 2, reducing internal covariate shift in the gradient signal and often improving stability and generalization. |
 | **CV trust gating** | Automatically detects when per-slice ranges are noisy and gracefully falls back to a robust global estimate. |
-| **Decoupled weight decay** | Standard or schedule-coupled weight decay, preventing late-training decay from overpowering vanishing learning rates. |
-| **BF16 stochastic rounding** | Unbiased rounding for BFloat16 parameters eliminates systematic truncation drift, meaningfully improving low-precision training fidelity. |
-| **Configurable compute precision** | Promotes intermediates to FP64 by default (FP32, BF16, FP16, or native dtype also supported) so that range and division arithmetic stays precise. |
+| **Decoupled weight decay** | Standard or schedule-coupled weight decay; the schedule-coupled option `wd_schedule` prevents late-training decay from overpowering vanishing learning rates. |
+| **BF16 stochastic rounding** | Unbiased rounding for BFloat16 parameters eliminates systematic truncation drift, substantially improving low-precision training fidelity. |
+| **Configurable compute precision** | Promotes intermediate computations to FP64 by default (FP32, BF16, FP16, or native dtype also supported) so that range and division arithmetic remain numerically precise. |
+| **Large-model tested** | Successfully tested by third parties with large models such as [FLUX.2-dev](https://huggingface.co/black-forest-labs/FLUX.2-dev) (32B parameters) and [LTX](https://huggingface.co/Lightricks/LTX-2.3) (22B). |
 
 ## 🔬 Method
 

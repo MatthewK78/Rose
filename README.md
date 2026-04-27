@@ -9,7 +9,7 @@ Stateless optimization through range-normalized gradient updates.
 
 *In loving memory of my mother, **Rose Kieren**.*
 
-[![PyPI](https://img.shields.io/pypi/v/rose-opt?style=for-the-badge&logo=pypi&logoColor=white)](https://pypi.org/project/rose-opt/) [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-3776ab?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/) [![License](https://img.shields.io/badge/license-Apache%202.0-228b22?style=for-the-badge)](LICENSE)<br>
+[![PyPI](https://img.shields.io/pypi/v/rose-opt?style=for-the-badge&logo=pypi&logoColor=white&v=1.0.2)](https://pypi.org/project/rose-opt/) [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-3776ab?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/) [![License](https://img.shields.io/badge/license-Apache%202.0-228b22?style=for-the-badge)](LICENSE)<br>
 [![Github Sponsors](https://img.shields.io/badge/GitHub%20Sponsors-30363D?&logo=GitHub-Sponsors&logoColor=EA4AAA)](https://github.com/sponsors/MatthewK78) [![PayPal](https://img.shields.io/badge/PayPal-003087?logo=paypal&logoColor=fff)](https://www.paypal.com/donate/?hosted_button_id=VHLPWXMWHJ4C8)
 
 </div>

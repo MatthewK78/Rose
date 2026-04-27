@@ -28,6 +28,8 @@ Most adaptive optimizers (such as Adam, RMSprop, and their many variants) accumu
 
 **Rose** asks a simple question: *how much can you accomplish with just the gradient you have right now?*
 
+The answer is Rose's central mechanism: **instantaneous per-slice range normalization**. Instead of maintaining historical moment buffers, Rose estimates scale directly from the current gradient by measuring the dynamic range of each output slice.
+
 At each step, Rose normalizes every gradient tensor by a **per-slice range** yielding one adaptive scale factor per output unit. An optional **coefficient-of-variation trust gate** blends per-slice ranges with their global mean when the ranges are noisy, and optional **gradient centralization** removes shared directional bias before scaling.
 
 ## 📦 Installation
@@ -61,9 +63,9 @@ optimizer = Rose(params, lr=1e-3)
 
 ## 🔬 Method
 
-Consider a linear layer with weight matrix $W \in \mathbb{R}^{m \times n}$. Its gradient $G$ has the same shape: $m$ rows, one per output neuron. Rose computes the range ($|\max| - \min$) across the $n$ input-facing elements of each row independently, producing $m$ per-neuron scale factors. Zero-dimensional parameters receive a plain signSGD update.
+Consider a linear layer with weight matrix $W \in \mathbb{R}^{m \times n}$. Its gradient $G$ has the same shape: $m$ rows, one per output neuron. Rose computes the range ($|\max| - \min$) across the $n$ input-facing elements of each row independently, producing $m$ per-neuron scale factors. This **range normalization** step is the main innovation of Rose. It replaces history-based variance estimates with an instantaneous, slice-wise measure of gradient scale.
 
-This is analogous to how Adam assigns each *scalar* parameter its own adaptive denominator via a running variance estimate. Rose instead assigns each *output slice* a denominator based on the instantaneous spread of its gradient, requiring no history at all.
+This is analogous to how Adam assigns each *scalar* parameter its own adaptive denominator via a running variance estimate. Rose instead assigns each *output slice* a denominator based on the spread of its gradient, requiring no history at all.
 
 The **trust gate** addresses a practical concern: when per-slice ranges vary wildly (high coefficient of variation), the individual ranges may become unreliable. The trust factor $\tau = \mu / (\mu + \sigma)$ is close to 1 when ranges are self-consistent and close to 0 when they are noisy. The denominator smoothly interpolates between the local range (full detail) and the global mean range (maximum noise resistance).
 

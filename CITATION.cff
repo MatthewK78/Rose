@@ -11,7 +11,7 @@ identifiers:
     value: 10.5281/zenodo.19589764
     description: Stateless optimization through range-normalized gradient updates.
 repository-code: 'https://github.com/MatthewK78/Rose'
-abstract: 'The Rose optimizer rescales gradients using a per-slice `max - min` range computed by reducing all dimensions beyond the leading axis. Unlike Adam and other stateful optimizers, Rose maintains no per-parameter state between steps: no momentum buffers, variance estimates, or step counters.'
+abstract: 'The Rose optimizer rescales gradients using a per-slice `|max| - min` range computed by reducing all dimensions beyond the leading axis. Unlike Adam and other stateful optimizers, Rose maintains no per-parameter state between steps: no momentum buffers, variance estimates, or even step counters.'
 keywords:
   - optimizer
   - pytorch

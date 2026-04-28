@@ -62,7 +62,6 @@ optimizer = Rose(params, lr=1e-3)
 | **Decoupled weight decay** | Standard or schedule-coupled weight decay; the schedule-coupled option `wd_schedule` prevents late-training decay from overpowering vanishing learning rates. |
 | **BF16 stochastic rounding** | Unbiased rounding for BFloat16 parameters eliminates systematic truncation drift, substantially improving low-precision training fidelity. |
 | **Configurable compute precision** | Promotes intermediate computations to FP64 by default (FP32, BF16, FP16, or native dtype also supported) so that range and division arithmetic remain numerically precise. |
-| **Large-model tested** | Successfully tested by third parties with large models such as [FLUX.2-dev](https://huggingface.co/black-forest-labs/FLUX.2-dev) (32B parameters) and [LTX](https://huggingface.co/Lightricks/LTX-2.3) (22B). |
 
 ## 🔬 Method
 

@@ -18,6 +18,7 @@ Stateless optimization through range-normalized gradient updates.
 
 ## 📰 News
 
+> 2026-10-09 [Info] — <i>v2 is nearly ready for release!</i> This major update will introduce spectralization and an improved `bf16_sr` alongside various bug fixes and other enhancements.<br>
 > 2026-04-26 [v1.0.2] — PyPI support, change to `from rose_opt import Rose`<br>
 > 2026-04-19 [v1.0.1] — Misc refinements to algorithm and docs<br>
 > 2026-04-17 [v1.0.0] — Initial public release
